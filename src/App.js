@@ -16,7 +16,7 @@ const [error ,setError]=useState(null)
     setisLoading(true)
     setError(null)
     try{
-    const response= await fetch('https://swapi.dev/api/films/');
+    const response= await fetch('https://react-movies-3a05d-default-rtdb.firebaseio.com/movies.json');
 
     if(!response.ok){
       throw new Error('Something Went Wrong!')
@@ -25,15 +25,20 @@ const [error ,setError]=useState(null)
 
     const data= await response.json();
 
-    const transformedMovies=data.results.map((movieData)=>{
-      return {
-        id:movieData.episode_id,
-        title:movieData.title,
-        openingText:movieData.opening_crawl,
-        releaseDate:movieData.release_date,
-      } 
-    });
-    setMovies(transformedMovies)
+    const loadedMovies=[];
+
+    for(const key in data){
+      loadedMovies.push({
+        id:key,
+        title:data[key].title,
+        openingText:data[key].openingText,
+        releaseDate:data[key].releaseDate,
+      })
+    }
+
+
+
+    setMovies(loadedMovies)
   
   }
   catch(err){
@@ -47,9 +52,21 @@ useEffect(()=>{
 fetchMoviesHandler()
 },[fetchMoviesHandler])
 
-function addMovieHandler(movie) {
-  console.log(movie);
+ async function addMovieHandler(movie) {
+ try{
+const response= await fetch('https://react-movies-3a05d-default-rtdb.firebaseio.com/movies.json',{
+method:'POST',
+body:JSON.stringify(movie)
+ })
+
+const data= await response.json();
+console.log(data)
+
+ }catch(err){
+  console.log(err)
+ }
 }
+
 
 
 let content= <p>No Movies Found!</p>
@@ -74,7 +91,7 @@ if(isLoading){
   return (
     <React.Fragment>
     <section>
-      <AddMovie  onAddMovie={addMovieHandler}/>
+      <AddMovie  onAddMovie={addMovieHandler} />
       </section>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
